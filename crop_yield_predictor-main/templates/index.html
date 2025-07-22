@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Yield Prediction</title>
+    <link rel="icon" href="{{ url_for('static', filename='grains.png') }}" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --accent-color: #0dde09d5;
+            --form-bg: rgba(255, 255, 255, 0.95);
+            --text-dark: #333;
+            --border-radius: 10px;
+            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: url("{{ url_for('static', filename='img.jpg') }}") no-repeat center center;
+            background-size: cover;
+            background-attachment: fixed;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin: 20px 0;
+            color: var(--accent-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::before {
+            content: "🌾";
+            margin-right: 10px;
+        }
+
+        h1::after {
+            content: "🌱";
+            margin-left: 10px;
+        }
+
+        .subtitle {
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background-color: var(--form-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            animation: slideUp 0.8s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+            color: var(--primary-color);
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+        }
+
+        .form-group.full-width {
+            flex-basis: 100%;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+
+        input[type="text"]:hover,
+        select:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .form-footer {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .submit-btn i {
+            margin-right: 8px;
+        }
+
+        .message {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .error-message {
+            background-color: rgba(255, 204, 204, 0.95);
+            color: #d32f2f;
+            border-left: 5px solid #d32f2f;
+        }
+
+        .warning-message {
+            background-color: rgba(255, 243, 204, 0.95);
+            color: #e65100;
+            border-left: 5px solid #e65100;
+        }
+
+        .soil-message {
+            background-color: rgba(230, 247, 255, 0.95);
+            color: #0277bd;
+            border-left: 5px solid #0277bd;
+        }
+
+        .success-message {
+            background-color: rgba(204, 255, 204, 0.95);
+            color: #2e7d32;
+            border-left: 5px solid #2e7d32;
+        }
+
+        .message h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .message p {
+            margin: 8px 0;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            color: #666;
+            cursor: help;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+            font-size: 0.9rem;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+        }
+
+        .input-icon input,
+        .input-icon select {
+            padding-right: 35px;
+        }
+
+        /* Crop selection dropdown styling */
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+            pointer-events: none;
+        }
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 768px) {
+            .form-group {
+                flex-basis: 100%;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            form {
+                padding: 20px;
+            }
+        }
+
+        /* Custom scroll bar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: none;
+                color: black;
+            }
+
+            form, .message {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+            .submit-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Crop Yield Prediction</h1>
+            <p class="subtitle">Enter your farm details to predict crop yield and get customized recommendations</p>
+        </header>
+
+        <form action="{{url_for('predict_datapoint')}}" method="POST">
+            <!-- Soil Parameters Section -->
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-seedling"></i> Soil Parameters</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="N">
+                            Nitrogen (N)
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Nitrogen content in soil (kg/ha)</span>
+                            </span>
+                        </label>
+                        <div class="input-icon">
+                            <input type="text" id="N" name="N" placeholder="Enter Nitrogen value">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="P">
+                            Phosphorus (P)
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Phosphorus content in soil (kg/ha)</span>
+                            </span>
+                        </label>
+                        <div class="input-icon">
+                            <input type="text" id="P" name="P" placeholder="Enter Phosphorus value">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="K">
+                            Potassium (K)
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Potassium content in soil (kg/ha)</span>
+                            </span>
+                        </label>
+                        <div class="input-icon">
+                            <input type="text" id="K" name="K" placeholder="Enter Potassium value">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Environmental Factors Section -->
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-cloud-sun"></i> Environmental Factors</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pH">
+                            pH Level
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Soil pH value (typically 0-14)</span>
+                            </span>
+                        </label>
+                        <div class="input-icon">
+                            <input type="text" id="pH" name="pH" placeholder="Enter pH value">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rainfall">
+                            Rainfall
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Annual rainfall in millimeters</span>
+                            </span>
+                        </label>
+                        <div class="input-icon">
+                            <input type="text" id="rainfall" name="rainfall" placeholder="Enter rainfall in mm">
+                            <i class="fas fa-cloud-rain"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="temperature">
+                            Temperature
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Average temperature in Celsius</span>
+                            </span>
+                        </label>
+                        <div class="input-icon">
+                            <input type="text" id="temperature" name="temperature" placeholder="Enter temperature in °C">
+                            <i class="fas fa-temperature-high"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Farm Details Section -->
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-map-marker-alt"></i> Farm Details</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="Area_in_hectares">
+                            Area
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Total farm area in hectares</span>
+                            </span>
+                        </label>
+                        <div class="input-icon">
+                            <input type="text" id="Area_in_hectares" name="Area_in_hectares" placeholder="Enter area in hectares">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="State_Name">
+                            State
+                            <span class="tooltip"><i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Select your state for region-specific predictions</span>
+                            </span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="State_Name" name="State_Name">
+                                <option value="" disabled selected>Select your state</option>
+                 <option value="andaman and nicobar islands">Andaman And Nicobar Islands</option>
+                 <option value="andhra pradesh">Andhra Pradesh</option>
+                 <option value="arunachal pradesh">Arunachal Pradesh</option>
+                 <option value="assam">Assam</option>
+                 <option value="bihar">Bihar</option>
+                 <option value="chandigarh">Chandigarh</option>
+                 <option value="chhattisgarh">Chhattisgarh</option>
+                 <option value="dadra and nagar haveli">Dadra And Nagar Haveli</option>
+                 <option value="goa">Goa</option>
+                 <option value="gujarat">Gujarat</option>
+                 <option value="haryana">Haryana</option>
+                 <option value="himachal pradesh">Himachal Pradesh</option>
+                 <option value="jammu and kashmir">Jammu And Kashmir</option>
+                 <option value="jharkhand">Jharkhand</option>
+                 <option value="karnataka">Karnataka</option>
+                 <option value="kerala">Kerala</option>
+                 <option value="madhya pradesh">Madhya Pradesh</option>
+                 <option value="maharashtra">Maharashtra</option>
+                 <option value="manipur">Manipur</option>
+                 <option value="meghalaya">Meghalaya</option>
+                 <option value="mizoram">Mizoram</option>
+                 <option value="nagaland">Nagaland</option>
+                 <option value="odisha">Odisha</option>
+                 <option value="puducherry">Puducherry</option>
+                 <option value="punjab">Punjab</option>
+                 <option value="rajasthan">Rajasthan</option>
+                 <option value="sikkim">Sikkim</option>
+                 <option value="tamil nadu">Tamil Nadu</option>
+                 <option value="telangana">Telangana</option>
+                 <option value="tripura">Tripura</option>
+                 <option value="uttar pradesh">Uttar Pradesh</option>
+                 <option value="uttarakhand">Uttarakhand</option>
+                 <option value="west bengal">West Bengal</option>
+             </select>
+             <i class="fas fa-map-marker-alt"></i>
+         </div>
+     </div>
+     
+     <div class="form-group">
+         <label for="Crop_Type">
+             Crop Season
+             <span class="tooltip"><i class="fas fa-info-circle"></i>
+                 <span class="tooltip-text">Select the growing season for your crop</span>
+             </span>
+         </label>
+         <div class="select-wrapper">
+             <select id="Crop_Type" name="Crop_Type">
+                 <option value="" disabled selected>Select crop season</option>
+                 <option value="kharif">Kharif</option>
+                 <option value="rabi">Rabi</option>
+                 <option value="whole year">Whole Year</option>
+                 <option value="summer">Summer</option>
+             </select>
+             <i class="fas fa-calendar-alt"></i>
+         </div>
+     </div>
+     
+     <div class="form-group">
+         <label for="Crop">
+             Crop
+             <span class="tooltip"><i class="fas fa-info-circle"></i>
+                 <span class="tooltip-text">Select the crop you want to grow</span>
+             </span>
+         </label>
+         <div class="select-wrapper">
+             <select id="Crop" name="Crop">
+                 <option value="" disabled selected>Select crop type</option>
+                 <option value="rice">Rice</option>
+                 <option value="turmeric">Turmeric</option>
+                 <option value="sweetpotato">Sweetpotato</option>
+                 <option value="moong">Moong</option>
+                 <option value="maize">Maize</option>
+                 <option value="cashewnuts">Cashewnuts</option>
+                 <option value="blackpepper">Blackpepper</option>
+                 <option value="arecanut">Arecanut</option>
+                 <option value="pumpkin">Pumpkin</option>
+                 <option value="cardamom">Cardamom</option>
+                 <option value="soyabean">Soyabean</option>
+                 <option value="banana">Banana</option>
+                 <option value="brinjal">Brinjal</option>
+                 <option value="grapes">Grapes</option>
+                 <option value="orange">Orange</option>
+                 <option value="tapioca">Tapioca</option>
+                 <option value="ladyfinger">Ladyfinger</option>
+                 <option value="barley">Barley</option>
+                 <option value="drumstick">Drumstick</option>
+                 <option value="jute">Jute</option>
+                 <option value="sunflower">Sunflower</option>
+                 <option value="apple">Apple</option>
+                 <option value="jackfruit">Jackfruit</option>
+                 <option value="bottlegourd">Bottlegourd</option>
+                 <option value="cotton">Cotton</option>
+                 <option value="coffee">Coffee</option>
+                 <option value="sesamum">Sesamum</option>
+                 <option value="garlic">Garlic</option>
+                 <option value="potato">Potato</option>
+                 <option value="beetroot">Beetroot</option>
+                 <option value="onion">Onion</option>
+                 <option value="rapeseed">Rapeseed</option>
+                 <option value="horsegram">Horsegram</option>
+                 <option value="ragi">Ragi</option>
+                 <option value="jowar">Jowar</option>
+                 <option value="wheat">Wheat</option>
+                 <option value="coriander">Coriander</option>
+                 <option value="ginger">Ginger</option>
+                 <option value="cabbage">Cabbage</option>
+                 <option value="mango">Mango</option>
+                 <option value="tomato">Tomato</option>
+                 <option value="cucumber">Cucumber</option>
+                 <option value="papaya">Papaya</option>
+                 <option value="ridgegourd">Ridgegourd</option>
+                 <option value="bittergourd">Bittergourd</option>
+                 <option value="cauliflower">Cauliflower</option>
+                 <option value="ashgourd">Ashgourd</option>
+                 <option value="pomegranate">Pomegranate</option>
+                 <option value="watermelon">Watermelon</option>
+                 <option value="carrot">Carrot</option>
+                 <option value="blackgram">Blackgram</option>
+                 <option value="radish">Radish</option>
+                 <option value="pineapple">Pineapple</option>
+             </select>
+             <i class="fas fa-leaf"></i>
+         </div>
+     </div>
+ </div>
+</div>
+
+<div class="form-footer">
+ <button type="submit" class="submit-btn">
+     <i class="fas fa-calculator"></i> Predict Yield
+ </button>
+</div>
+</form>
+
+<!-- Display error messages -->
+{% if errors %}
+<div class="message error-message">
+ <h3><i class="fas fa-exclamation-circle"></i> Error</h3>
+ {% for error in errors %}
+     <p>{{ error }}</p>
+ {% endfor %}
+</div>
+{% endif %}
+
+<!-- Display warnings -->
+{% if warnings %}
+<div class="message warning-message">
+ <h3><i class="fas fa-exclamation-triangle"></i> General Warnings</h3>
+ {% for warning in warnings %}
+     <p>{{ warning }}</p>
+ {% endfor %}
+</div>
+{% endif %}
+
+{% if soil_warnings %}
+<div class="message soil-message">
+ <h3><i class="fas fa-seedling"></i> Soil Condition Warnings</h3>
+ {% for soil_warning in soil_warnings %}
+     <p>{{ soil_warning }}</p>
+ {% endfor %}
+</div>
+{% endif %}
+
+<!-- Display prediction result -->
+{% if final_result %}
+<div class="message success-message">
+ <h3><i class="fas fa-check-circle"></i> Prediction Result</h3>
+ <p>{{ final_result }}</p>
+ <p>{{ yield_result }}</p>
+</div>
+{% endif %}
+</div>
+</body>
+</html>
